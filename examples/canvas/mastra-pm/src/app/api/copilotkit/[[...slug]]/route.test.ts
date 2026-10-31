@@ -1,4 +1,5 @@
 // @vitest-environment node
+import type { RunAgentInput } from "@ag-ui/client";
 import { expect, test, vi } from "vitest";
 
 /** Headers each agent run received from the runtime. */
@@ -7,13 +8,13 @@ const runHeaders = vi.hoisted(() => [] as Record<string, string>[]);
 vi.mock("@/agent", async () => {
   const { HttpAgent } = await import("@ag-ui/client");
   class RecordingAgent extends HttpAgent {
-    run(input: Parameters<HttpAgent["run"]>[0]) {
+    run(input: RunAgentInput) {
       runHeaders.push({ ...this.headers });
       // HttpAgent's observable is lazy, so this never sends a request. Reuse
       // its Observable class (rxjs is not a direct dependency) for an empty run.
       const Observable = super.run(input).constructor as new (
         subscribe: (subscriber: { complete(): void }) => void,
-      ) => ReturnType<HttpAgent["run"]>;
+      ) => ReturnType<InstanceType<typeof HttpAgent>["run"]>;
       return new Observable((subscriber) => subscriber.complete());
     }
   }
