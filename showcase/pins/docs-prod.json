@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "service": "docs",
+  "image": "ghcr.io/copilotkit/showcase-shell-docs@sha256:93c1de41bcd4c9a1ceb6dd22f7495e4008a20f4d1477507be8353e713ed10ebd",
+  "digest": "sha256:93c1de41bcd4c9a1ceb6dd22f7495e4008a20f4d1477507be8353e713ed10ebd",
+  "git_sha": "854d70f66d222242802a69d6d6855eb71ec3b5ce",
+  "staging_url": "https://docs.staging.copilotkit.ai",
+  "verified_at": "2026-10-28T14:32:31.019Z"
+}
