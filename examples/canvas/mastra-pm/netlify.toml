@@ -1,0 +1,23 @@
+# Netlify configuration for the SaXer board.
+#
+# Site settings in the Netlify UI (Build & deploy → Build settings):
+#   Base directory:    (leave empty, the repository root)
+#   Package directory: examples/canvas/mastra-pm
+#
+# Environment variables in the Netlify UI (never in this file):
+#   OPENAI_API_KEY, BOARD_USER, BOARD_PASSWORD
+
+[build]
+  # Builds the CopilotKit workspace packages first, then the Next.js app.
+  command = "pnpm nx build @copilotkit-examples/mastra-pm"
+  # Relative to the base directory (repository root).
+  publish = "examples/canvas/mastra-pm/.next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Install only this app and the workspace packages it depends on.
+  PNPM_FLAGS = "--filter @copilotkit-examples/mastra-pm..."
+  NX_DAEMON = "false"
+  NX_NO_CLOUD = "true"
+  NEXT_TELEMETRY_DISABLED = "1"
+  COPILOTKIT_TELEMETRY_DISABLED = "true"

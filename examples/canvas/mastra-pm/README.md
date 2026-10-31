@@ -21,6 +21,26 @@ Jede Aufgabe hat einen Bereich (z. B. Vermietung, Bewertung). Der Assistent weis
 
 Optional: `COPILOTKIT_TELEMETRY_DISABLED=true` in `.env` setzen, um die Telemetrie der CopilotKit-Runtime abzuschalten.
 
+**Veröffentlichen auf Netlify:**
+
+Die Datei `netlify.toml` enthält Build-Befehl und Einstellungen. Einmalig im Netlify-Konto:
+
+1. _Add new project → Import an existing project_ → GitHub → Repository `ouhou-saxer/CopilotKit`, Branch `main`.
+2. _Base directory_ leer lassen, _Package directory_ auf `examples/canvas/mastra-pm` setzen. Build-Befehl und Publish-Verzeichnis kommen aus `netlify.toml`.
+3. Unter _Project configuration → Environment variables_ setzen (Werte nie ins Repository):
+
+   | Variable         | Inhalt                                         |
+   | ---------------- | ---------------------------------------------- |
+   | `OPENAI_API_KEY` | OpenAI-Schlüssel                               |
+   | `BOARD_USER`     | Benutzername für die Anmeldung, z. B. `saxer`  |
+   | `BOARD_PASSWORD` | Langes, zufälliges Passwort (mind. 16 Zeichen) |
+
+4. _Deploy_ starten. Der erste Build dauert rund 5–10 Minuten.
+
+Passwortschutz: Ohne `BOARD_USER` und `BOARD_PASSWORD` antwortet die veröffentlichte App auf jede Anfrage mit «Zugang nicht eingerichtet» (HTTP 503), damit niemand ungeschützt auf Kosten des OpenAI-Schlüssels chatten kann. Lokal (`pnpm dev`) ist kein Passwort nötig. Die Anmeldung wird nie an OpenAI weitergegeben.
+
+Einschränkung: Das Board speichert nichts dauerhaft. Nach einem Neuladen der Seite beginnt es wieder mit den Startaufgaben, und Yves und Sascha sehen jeweils ihr eigenes Board.
+
 ---
 
 Run a project board whose tasks, team members, name, and description follow a Mastra agent's working memory. The page uses CopilotKit v2 shared state and a theme tool.
