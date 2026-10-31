@@ -54,7 +54,7 @@ test("a partial streamed board renders valid tasks and safely skips malformed re
     expect(within(view.container).getByText("Release board")).toBeTruthy();
     expect(within(view.container).getByText("Ship the release")).toBeTruthy();
     expect(within(view.container).queryByText("Partial task")).toBeNull();
-    expect(within(view.container).getByText("Team Members")).toBeTruthy();
+    expect(within(view.container).getByText("Team")).toBeTruthy();
     expect(view.agent.setState).not.toHaveBeenCalled();
   } finally {
     view.unmount();
@@ -67,9 +67,17 @@ test("an empty agent is seeded once with the initial project board", () => {
     expect(view.agent.setState).toHaveBeenCalledOnce();
     expect(view.agent.setState).toHaveBeenCalledWith(
       expect.objectContaining({
-        projectName: "My Project",
+        projectName: "SaXer Immobilien & Verwaltungen",
+        users: [
+          expect.objectContaining({ id: 1, name: "Yves" }),
+          expect.objectContaining({ id: 2, name: "Sascha" }),
+        ],
         tasks: expect.arrayContaining([
-          expect.objectContaining({ name: "Build the product" }),
+          expect.objectContaining({
+            name: "Marktwertschätzung Einfamilienhaus Steffisburg",
+            area: "bewertung",
+            assignedTo: 2,
+          }),
         ]),
       }),
     );
@@ -89,7 +97,11 @@ test("hydrated empty arrays stay empty without reseeding the board", () => {
   });
   try {
     expect(within(view.container).getByText("Saved board")).toBeTruthy();
-    expect(within(view.container).queryByText("Build the product")).toBeNull();
+    expect(
+      within(view.container).queryByText(
+        "Inserat 3½-Zimmer-Wohnung Thun-Dürrenast",
+      ),
+    ).toBeNull();
     expect(view.agent.setState).not.toHaveBeenCalled();
   } finally {
     view.unmount();
@@ -135,10 +147,71 @@ test("later streamed tasks update their board column without changing saved stat
     view.rerender(<CopilotKitPage />);
 
     const task = within(view.container).getByText("Verified release");
-    const doneColumn = within(view.container).getByText("Done").parentElement
-      ?.parentElement;
+    const doneColumn = within(view.container).getByText("Erledigt")
+      .parentElement?.parentElement;
     expect(doneColumn?.contains(task)).toBe(true);
     expect(view.agent.setState).not.toHaveBeenCalled();
+  } finally {
+    view.unmount();
+  }
+});
+
+test("the starter board shows SaXer areas, German columns and local initials", () => {
+  const view = setup();
+  try {
+    const board = within(view.container);
+    for (const column of ["Offen", "In Arbeit", "Erledigt"])
+      expect(board.getByText(column)).toBeTruthy();
+    expect(board.getAllByText("SaXer Verwaltungen").length).toBeGreaterThan(0);
+    expect(board.getAllByText("SaXer Immobilien").length).toBeGreaterThan(0);
+    expect(board.getByText("Bewertung")).toBeTruthy();
+    expect(board.getByText("IT & Digitalisierung")).toBeTruthy();
+    // Initials avatars render locally; no image requests to external services.
+    expect(view.container.querySelector("img")).toBeNull();
+    expect(board.getAllByRole("img", { name: "Yves" }).length).toBeGreaterThan(
+      0,
+    );
+  } finally {
+    view.unmount();
+  }
+});
+
+test("streamed tasks without a known area still render, without an area badge", () => {
+  const view = setup({
+    projectName: "Board",
+    users: [],
+    tasks: [
+      {
+        id: 7,
+        name: "Ohne Bereich",
+        description: "Alte Aufgabe",
+        status: "todo",
+        assignedTo: 1,
+      },
+      {
+        id: 8,
+        name: "Unbekannter Bereich",
+        description: "Neuer Bereich",
+        status: "todo",
+        assignedTo: 2,
+        area: "garten",
+      },
+      {
+        id: 9,
+        name: "Wiedervermietung",
+        description: "Inserat aufschalten",
+        status: "in-progress",
+        assignedTo: 1,
+        area: "vermietung",
+      },
+    ],
+  });
+  try {
+    const board = within(view.container);
+    expect(board.getByText("Ohne Bereich")).toBeTruthy();
+    expect(board.getByText("Unbekannter Bereich")).toBeTruthy();
+    expect(board.queryByText("garten")).toBeNull();
+    expect(board.getByText("Vermietung")).toBeTruthy();
   } finally {
     view.unmount();
   }

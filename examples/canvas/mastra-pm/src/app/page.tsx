@@ -9,8 +9,12 @@ import {
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { z } from "zod";
+import { chatLabels } from "@/lib/chatLabels";
 import { createInitialState, isEmptyState, readAgentState } from "@/lib/state";
 import { ProjectContainer } from "./components/ProjectContainer";
+
+/** SaXer blue; the assistant can change it with the setThemeColor tool. */
+const DEFAULT_THEME_COLOR = "#1d4e89";
 
 /** Share one agent and conversation between the project board and chat. */
 export default function CopilotKitPage() {
@@ -23,7 +27,7 @@ export default function CopilotKitPage() {
 
 /** Render the board from validated agent state and register its browser tools. */
 function ProjectManager() {
-  const [themeColor, setThemeColor] = useState("#6366f1");
+  const [themeColor, setThemeColor] = useState(DEFAULT_THEME_COLOR);
   const { agent } = useAgent();
   const state = readAgentState(agent.state);
 
@@ -34,7 +38,7 @@ function ProjectManager() {
   useFrontendTool({
     name: "setThemeColor",
     agentId: "default",
-    description: "Change the project board's theme color.",
+    description: "Change the board's theme color (Farbe des Boards ändern).",
     parameters: z.object({
       themeColor: z
         .string()
@@ -58,14 +62,7 @@ function ProjectManager() {
       >
         <ProjectContainer state={state} />
       </div>
-      <CopilotSidebar
-        defaultOpen
-        labels={{
-          modalHeaderTitle: "Project Assistant",
-          welcomeMessageText:
-            "Hi! Ask me to plan tasks, update the board, or change the project theme.",
-        }}
-      />
+      <CopilotSidebar defaultOpen labels={chatLabels} />
     </main>
   );
 }

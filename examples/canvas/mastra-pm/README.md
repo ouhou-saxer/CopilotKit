@@ -1,5 +1,28 @@
 # Project Manager with Mastra
 
+## SaXer-Anpassung (Deutsch)
+
+Dieses Beispiel ist als Aufgaben-Board für **SaXer Verwaltungen** (Yves: Vermietung, Bewirtschaftung, Finanzen, Personal, IT) und **SaXer Immobilien** (Sascha: Bewertung, Verkauf, Networking) in der Region Thun eingerichtet.
+
+| Was                                                     | Wo anpassen                                 |
+| ------------------------------------------------------- | ------------------------------------------- |
+| Team, Bereiche, Standard-Zuständigkeiten, Startaufgaben | `src/lib/types.ts`                          |
+| Verhalten und Fachwissen des Assistenten                | `src/mastra/agents/systemPrompt.ts`         |
+| Chat-Texte (Deutsch, Schweiz)                           | `src/lib/chatLabels.ts`                     |
+| Standardfarbe des Boards                                | `DEFAULT_THEME_COLOR` in `src/app/page.tsx` |
+
+Jede Aufgabe hat einen Bereich (z. B. Vermietung, Bewertung). Der Assistent weist neue Aufgaben automatisch der zuständigen Person zu. Profilbilder werden lokal als Initialen erzeugt, es gehen keine Namen an externe Avatar-Dienste.
+
+**Betrieb in einer Claude-Code-Cloud-Umgebung:**
+
+1. In den Einstellungen der Umgebung unter _Network access → Allowed domains_ `api.openai.com` freigeben.
+2. `OPENAI_API_KEY` als Umgebungsvariable der Cloud-Umgebung hinterlegen (nicht ins Repository einchecken).
+3. Neue Session starten, dann `pnpm install --frozen-lockfile` und `pnpm nx dev @copilotkit-examples/mastra-pm`.
+
+Optional: `COPILOTKIT_TELEMETRY_DISABLED=true` in `.env` setzen, um die Telemetrie der CopilotKit-Runtime abzuschalten.
+
+---
+
 Run a project board whose tasks, team members, name, and description follow a Mastra agent's working memory. The page uses CopilotKit v2 shared state and a theme tool.
 
 ![Project board](./assets/preview.png)

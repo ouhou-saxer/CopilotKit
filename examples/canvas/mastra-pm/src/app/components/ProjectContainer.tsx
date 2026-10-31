@@ -1,10 +1,10 @@
-import type { AgentState } from "@/lib/state";
+import type { BoardState } from "@/lib/state";
 import { ProjectHeader } from "./ProjectHeader";
 import { KanbanBoard } from "./KanbanBoard";
 import { TeamSection } from "./TeamSection";
 
 interface ProjectContainerProps {
-  state: AgentState;
+  state: BoardState;
 }
 
 export function ProjectContainer({ state }: ProjectContainerProps) {

@@ -1,9 +1,10 @@
-import type { AgentState } from "@/lib/state";
+import type { BoardState, BoardUser } from "@/lib/state";
+import { Avatar } from "./Avatar";
 
 interface UsersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  state: AgentState;
+  state: BoardState;
 }
 
 export function UsersModal({ isOpen, onClose, state }: UsersModalProps) {
@@ -14,13 +15,12 @@ export function UsersModal({ isOpen, onClose, state }: UsersModalProps) {
       <div className="bg-white/20 backdrop-blur-md rounded-3xl shadow-2xl max-w-3xl w-full border border-white/20">
         <div className="flex justify-between items-center p-8 border-b border-white/10">
           <div>
-            <h2 className="text-3xl font-bold text-white">Team Members</h2>
-            <p className="text-gray-200 text-sm mt-1">
-              Manage your project team
-            </p>
+            <h2 className="text-3xl font-bold text-white">Team</h2>
+            <p className="text-gray-200 text-sm mt-1">Team verwalten</p>
           </div>
           <button
             onClick={onClose}
+            aria-label="Schliessen"
             className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-white/10 rounded-lg"
           >
             X
@@ -37,20 +37,13 @@ export function UsersModal({ isOpen, onClose, state }: UsersModalProps) {
 }
 
 interface UserCardProps {
-  user: AgentState["users"][0];
+  user: BoardUser;
 }
 
 function UserCard({ user }: UserCardProps) {
   return (
     <div className="flex items-center gap-4 bg-white/10 rounded-xl p-6 border border-white/10 hover:bg-white/20 transition-all duration-200">
-      <div className="relative">
-        <img
-          src={user.image}
-          alt={user.name}
-          className="w-16 h-16 rounded-xl object-cover border-2 border-white/20"
-        />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
-      </div>
+      <Avatar name={user.name} image={user.image} size="lg" />
       <div className="flex-1">
         <div className="font-semibold text-xl text-white mb-1">{user.name}</div>
         <div className="text-sm text-gray-200 mb-2">{user.role}</div>
