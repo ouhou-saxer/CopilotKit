@@ -29,17 +29,27 @@ Die Datei `netlify.toml` enthält Build-Befehl und Einstellungen. Einmalig im Ne
 2. _Base directory_ leer lassen, _Package directory_ auf `examples/canvas/mastra-pm` setzen. Build-Befehl und Publish-Verzeichnis kommen aus `netlify.toml`.
 3. Unter _Project configuration → Environment variables_ setzen (Werte nie ins Repository):
 
-   | Variable         | Inhalt                                         |
-   | ---------------- | ---------------------------------------------- |
-   | `OPENAI_API_KEY` | OpenAI-Schlüssel                               |
-   | `BOARD_USER`     | Benutzername für die Anmeldung, z. B. `saxer`  |
-   | `BOARD_PASSWORD` | Langes, zufälliges Passwort (mind. 16 Zeichen) |
+   | Variable              | Inhalt                                                   |
+   | --------------------- | -------------------------------------------------------- |
+   | `OPENAI_API_KEY`      | OpenAI-Schlüssel                                         |
+   | `BOARD_USER`          | Benutzername für die Anmeldung, z. B. `saxer`            |
+   | `BOARD_PASSWORD`      | Langes, zufälliges Passwort (mind. 16 Zeichen)           |
+   | `BOARD_DB_URL`        | Adresse der Turso-Datenbank, z. B. `libsql://….turso.io` |
+   | `BOARD_DB_AUTH_TOKEN` | Zugriffs-Token der Turso-Datenbank                       |
 
 4. _Deploy_ starten. Der erste Build dauert rund 5–10 Minuten.
 
 Passwortschutz: Ohne `BOARD_USER` und `BOARD_PASSWORD` antwortet die veröffentlichte App auf jede Anfrage mit «Zugang nicht eingerichtet» (HTTP 503), damit niemand ungeschützt auf Kosten des OpenAI-Schlüssels chatten kann. Lokal (`pnpm dev`) ist kein Passwort nötig. Die Anmeldung wird nie an OpenAI weitergegeben.
 
-Einschränkung: Das Board speichert nichts dauerhaft. Nach einem Neuladen der Seite beginnt es wieder mit den Startaufgaben, und Yves und Sascha sehen jeweils ihr eigenes Board.
+**Gemeinsames Board (Speicherung):**
+
+Yves und Sascha arbeiten auf demselben Board. Es wird nach jeder Antwort des Assistenten gespeichert und bleibt nach dem Neuladen erhalten. Änderungen der anderen Person erscheinen nach spätestens 15 Sekunden (oder sobald das Browserfenster wieder aktiv ist). Unter dem Board zeigt ein Hinweis den Stand: «Gespeichert», «Wird gespeichert …» usw.
+
+- **Datenbank für Netlify:** Bei [Turso](https://turso.tech) (libSQL, Gratis-Stufe) eine Datenbank anlegen, als Region am besten Frankfurt bzw. EU wählen (Mieter- und Objektdaten bleiben so in der EU). Adresse und Token als `BOARD_DB_URL` und `BOARD_DB_AUTH_TOKEN` in Netlify eintragen. Die Tabelle wird beim ersten Zugriff automatisch angelegt.
+- **Lokal** (`pnpm dev`) speichert das Board ohne weitere Einstellung in der Datei `.board-data.db` (nicht im Repository).
+- **Ohne Datenbank** funktioniert die veröffentlichte App weiterhin, speichert aber nichts. Der Hinweis unter dem Board lautet dann «Nicht gespeichert: kein Speicher eingerichtet».
+- **Gleichzeitige Änderungen:** Speichern beide fast gleichzeitig, gewinnt die erste Änderung; die zweite wird nicht überschrieben, sondern das Board neu geladen, mit dem Hinweis, die letzte Anfrage zu wiederholen.
+- Der Chatverlauf und die Themenfarbe werden nicht gespeichert, nur das Board.
 
 ---
 

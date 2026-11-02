@@ -5,7 +5,8 @@
 #   Package directory: examples/canvas/mastra-pm
 #
 # Environment variables in the Netlify UI (never in this file):
-#   OPENAI_API_KEY, BOARD_USER, BOARD_PASSWORD
+#   OPENAI_API_KEY, BOARD_USER, BOARD_PASSWORD,
+#   BOARD_DB_URL, BOARD_DB_AUTH_TOKEN (shared board in a Turso database)
 
 [build]
   # Builds the CopilotKit workspace packages first, then the Next.js app.
