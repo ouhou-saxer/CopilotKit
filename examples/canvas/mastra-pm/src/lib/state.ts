@@ -17,9 +17,14 @@ const BoardTaskSchema = TaskSchema.extend({
   area: AreaSchema.optional().catch(undefined),
 });
 
+/** A complete board as shown and saved; tasks may lack an area. */
+export const BoardStateSchema = AgentStateSchema.extend({
+  tasks: z.array(BoardTaskSchema),
+});
+
 export type BoardTask = z.infer<typeof BoardTaskSchema>;
 export type BoardUser = AgentState["users"][number];
-export type BoardState = Omit<AgentState, "tasks"> & { tasks: BoardTask[] };
+export type BoardState = z.infer<typeof BoardStateSchema>;
 
 /** Create independent starter data for a new conversation. */
 export function createInitialState(): AgentState {
