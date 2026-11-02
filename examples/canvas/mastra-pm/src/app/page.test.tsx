@@ -21,7 +21,7 @@ const sdk = vi.hoisted(() => ({
   >(),
 }));
 vi.mock("@copilotkit/react-core/v2", () => ({
-  useAgent: () => ({ agent: sdk.agent }),
+  useAgent: () => ({ agent: sdk.agent, isReady: true }),
   useFrontendTool: (tool: { name: string }) => sdk.tools.set(tool.name, tool),
   CopilotChatConfigurationProvider: ({ children }: { children: ReactNode }) =>
     children,
@@ -29,6 +29,11 @@ vi.mock("@copilotkit/react-core/v2", () => ({
 }));
 /** Mount one isolated board with the supplied streamed agent state. */
 function setup(state: Record<string, unknown> = {}) {
+  // No shared storage in these tests; the sync then stays out of the way.
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => Response.json({}, { status: 503 })),
+  );
   sdk.agent = { state, setState: vi.fn() };
   sdk.tools = new Map();
   const view = render(<CopilotKitPage />);
