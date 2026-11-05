@@ -4,7 +4,7 @@ import { createInitialState } from "@/lib/state";
 
 /** Load the route with a fresh store (in-memory database by default). */
 async function setup(
-  env: Record<string, string> = { BOARD_DB_URL: ":memory:" },
+  env: Record<string, string> = { BOARD_LOCAL_DB: ":memory:" },
 ) {
   vi.resetModules();
   for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
@@ -78,7 +78,8 @@ test("invalid requests are rejected", async () => {
 test("production without a database answers 503", async () => {
   const { get, put } = await setup({
     NODE_ENV: "production",
-    BOARD_DB_URL: "",
+    SUPABASE_URL: "",
+    SUPABASE_SECRET_KEY: "",
   });
 
   expect((await get()).status).toBe(503);
