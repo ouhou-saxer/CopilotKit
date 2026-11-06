@@ -23,7 +23,7 @@ export interface BoardStore {
 
 const RowSchema = z.object({ data: z.string(), version: z.number() });
 
-/** One board (row id 1) in a libSQL / SQLite database. */
+/** One board (row id 1) in a local libSQL / SQLite database (development). */
 export function createLibsqlBoardStore(client: Client): BoardStore {
   let ready: Promise<unknown> | undefined;
   const ensureTable = () =>
@@ -76,25 +76,98 @@ export function createLibsqlBoardStore(client: Client): BoardStore {
   return { read, save };
 }
 
+const SupabaseRowsSchema = z.array(
+  z.object({ data: z.unknown(), version: z.number() }),
+);
+
+type SupabaseOptions = {
+  /** Project URL, e.g. https://<ref>.supabase.co */
+  url: string;
+  /** Secret key (sb_secret_…) or legacy service_role key. Server-side only. */
+  secretKey: string;
+  fetch?: typeof fetch;
+};
+
+/**
+ * The board in a Supabase table `board`, saved through the database function
+ * `save_board` (see supabase/board.sql), which only writes if the version is
+ * still `baseVersion`.
+ */
+export function createSupabaseBoardStore({
+  url,
+  secretKey,
+  fetch: fetchImpl = fetch,
+}: SupabaseOptions): BoardStore {
+  const base = url.replace(/\/+$/, "");
+  const headers: Record<string, string> = {
+    apikey: secretKey,
+    "content-type": "application/json",
+  };
+  // Legacy keys are JWTs and also go in Authorization; sb_secret_ keys do not.
+  if (secretKey.startsWith("eyJ"))
+    headers.authorization = `Bearer ${secretKey}`;
+
+  async function call(path: string, init?: RequestInit): Promise<unknown> {
+    const response = await fetchImpl(`${base}/rest/v1/${path}`, {
+      ...init,
+      headers,
+      cache: "no-store",
+    });
+    if (!response.ok)
+      throw new Error(`Supabase answered ${response.status} for ${path}`);
+    return response.json();
+  }
+
+  async function read(): Promise<StoredBoard | null> {
+    const rows = SupabaseRowsSchema.parse(
+      await call("board?id=eq.1&select=data,version"),
+    );
+    const row = rows[0];
+    if (!row) return null;
+    const board = BoardStateSchema.safeParse(row.data);
+    return board.success ? { board: board.data, version: row.version } : null;
+  }
+
+  async function save(
+    board: BoardState,
+    baseVersion: number | null,
+  ): Promise<SaveResult> {
+    const version = await call("rpc/save_board", {
+      method: "POST",
+      body: JSON.stringify({ p_data: board, p_base_version: baseVersion }),
+    });
+    if (typeof version === "number") return { ok: true, version };
+    return { ok: false, current: await read() };
+  }
+
+  return { read, save };
+}
+
 let store: BoardStore | null | undefined;
 
 /**
  * The board store configured for this server.
  *
- * - `BOARD_DB_URL` (and `BOARD_DB_AUTH_TOKEN` for Turso) when set.
- * - Otherwise a local file in development, so `pnpm dev` keeps the board.
- * - `null` in production without a database: the board then works, but
- *   is not saved, and the page says so.
+ * - Supabase when `SUPABASE_URL` and `SUPABASE_SECRET_KEY` are set.
+ * - Otherwise, in development, a local SQLite file (`BOARD_LOCAL_DB`,
+ *   default `.board-data.db`), so `pnpm dev` keeps the board.
+ * - `null` in production without Supabase: the board then works, but is
+ *   not saved, and the page says so.
  */
 export function getBoardStore(): BoardStore | null {
   if (store !== undefined) return store;
-  const url =
-    process.env.BOARD_DB_URL ||
-    (process.env.NODE_ENV === "production" ? "" : "file:.board-data.db");
-  store = url
-    ? createLibsqlBoardStore(
-        createClient({ url, authToken: process.env.BOARD_DB_AUTH_TOKEN }),
-      )
-    : null;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  if (supabaseUrl && secretKey) {
+    store = createSupabaseBoardStore({ url: supabaseUrl, secretKey });
+  } else if (process.env.NODE_ENV === "production") {
+    store = null;
+  } else {
+    store = createLibsqlBoardStore(
+      createClient({
+        url: process.env.BOARD_LOCAL_DB || "file:.board-data.db",
+      }),
+    );
+  }
   return store;
 }

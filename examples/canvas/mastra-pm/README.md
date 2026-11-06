@@ -29,13 +29,13 @@ Die Datei `netlify.toml` enthält Build-Befehl und Einstellungen. Einmalig im Ne
 2. _Base directory_ leer lassen, _Package directory_ auf `examples/canvas/mastra-pm` setzen. Build-Befehl und Publish-Verzeichnis kommen aus `netlify.toml`.
 3. Unter _Project configuration → Environment variables_ setzen (Werte nie ins Repository):
 
-   | Variable              | Inhalt                                                   |
-   | --------------------- | -------------------------------------------------------- |
-   | `OPENAI_API_KEY`      | OpenAI-Schlüssel                                         |
-   | `BOARD_USER`          | Benutzername für die Anmeldung, z. B. `saxer`            |
-   | `BOARD_PASSWORD`      | Langes, zufälliges Passwort (mind. 16 Zeichen)           |
-   | `BOARD_DB_URL`        | Adresse der Turso-Datenbank, z. B. `libsql://….turso.io` |
-   | `BOARD_DB_AUTH_TOKEN` | Zugriffs-Token der Turso-Datenbank                       |
+   | Variable              | Inhalt                                          |
+   | --------------------- | ----------------------------------------------- |
+   | `OPENAI_API_KEY`      | OpenAI-Schlüssel                                |
+   | `BOARD_USER`          | Benutzername für die Anmeldung, z. B. `saxer`   |
+   | `BOARD_PASSWORD`      | Langes, zufälliges Passwort (mind. 16 Zeichen)  |
+   | `SUPABASE_URL`        | Projekt-URL, z. B. `https://<ref>.supabase.co`  |
+   | `SUPABASE_SECRET_KEY` | Geheimer Schlüssel des Projekts (`sb_secret_…`) |
 
 4. _Deploy_ starten. Der erste Build dauert rund 5–10 Minuten.
 
@@ -45,7 +45,8 @@ Passwortschutz: Ohne `BOARD_USER` und `BOARD_PASSWORD` antwortet die veröffentl
 
 Yves und Sascha arbeiten auf demselben Board. Es wird nach jeder Antwort des Assistenten gespeichert und bleibt nach dem Neuladen erhalten. Änderungen der anderen Person erscheinen nach spätestens 15 Sekunden (oder sobald das Browserfenster wieder aktiv ist). Unter dem Board zeigt ein Hinweis den Stand: «Gespeichert», «Wird gespeichert …» usw.
 
-- **Datenbank für Netlify:** Bei [Turso](https://turso.tech) (libSQL, Gratis-Stufe) eine Datenbank anlegen, als Region am besten Frankfurt bzw. EU wählen (Mieter- und Objektdaten bleiben so in der EU). Adresse und Token als `BOARD_DB_URL` und `BOARD_DB_AUTH_TOKEN` in Netlify eintragen. Die Tabelle wird beim ersten Zugriff automatisch angelegt.
+- **Datenbank:** Das Board liegt im Supabase-Projekt «SaXer Board» (Organisation Saxer Unternehmungen AG, Region Zürich `eu-central-2`). Tabelle und Speicherfunktion sind dort bereits angelegt; das Schema steht in `supabase/board.sql` (für ein neues Projekt einmal im SQL-Editor ausführen).
+- **Schlüssel für Netlify:** Im Supabase-Dashboard unter _Project Settings → API Keys_ einen geheimen Schlüssel (`sb_secret_…`) erstellen und mit der Projekt-URL als `SUPABASE_SECRET_KEY` und `SUPABASE_URL` in Netlify eintragen. Der Schlüssel bleibt auf dem Server und gelangt nie in den Browser; die Tabelle ist für öffentliche Schlüssel gesperrt (Row Level Security ohne Freigaben).
 - **Lokal** (`pnpm dev`) speichert das Board ohne weitere Einstellung in der Datei `.board-data.db` (nicht im Repository).
 - **Ohne Datenbank** funktioniert die veröffentlichte App weiterhin, speichert aber nichts. Der Hinweis unter dem Board lautet dann «Nicht gespeichert: kein Speicher eingerichtet».
 - **Gleichzeitige Änderungen:** Speichern beide fast gleichzeitig, gewinnt die erste Änderung; die zweite wird nicht überschrieben, sondern das Board neu geladen, mit dem Hinweis, die letzte Anfrage zu wiederholen.
