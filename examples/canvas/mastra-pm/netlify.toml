@@ -22,3 +22,7 @@
   NX_NO_CLOUD = "true"
   NEXT_TELEMETRY_DISABLED = "1"
   COPILOTKIT_TELEMETRY_DISABLED = "true"
+  # Tests and CI files of other CopilotKit examples contain fake "sk-..." keys
+  # that fail Netlify's secrets scan. The build output (.next) and this app
+  # are still scanned.
+  SECRETS_SCAN_OMIT_PATHS = "showcase/**,examples/showcases/**,examples/v2/**,.github/**,packages/**/__tests__/**"
